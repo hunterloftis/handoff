@@ -49,14 +49,19 @@
     <script src='lib/player.js'></script>
     <script src='lib/level.js'></script>
     <script src='lib/game.js'></script>
+    <script src='lib/assets.js'></script>
 
     <script src='lib/joystick.js'></script>
     <script src='lib/camera.js'></script>
 
     <script>
+      var game,
+          assets = new Assets();
 
-      var game = new Game(document.getElementById('viewport'), requestAnimFrame);
-      game.start();
+      assets.load(function() {
+        game = new Game(document.getElementById('viewport'), requestAnimFrame);
+        game.start();
+      });
 
     </script>
   </body>

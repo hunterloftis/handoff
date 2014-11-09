@@ -49,19 +49,18 @@
     <script src='lib/player.js'></script>
     <script src='lib/level.js'></script>
     <script src='lib/game.js'></script>
-    <script src='lib/assets.js'></script>
 
     <script src='lib/joystick.js'></script>
-    <script src='lib/camera.js'></script>
+    <script src='lib/pixi-renderer.js'></script>
 
     <script>
-      var game,
-          assets = new Assets();
 
-      assets.load(function() {
-        game = new Game(document.getElementById('viewport'), requestAnimFrame);
-        game.start();
-      });
+      var viewport = document.getElementById('viewport');
+      var renderer = new PixiRenderer(viewport);
+      var joystick = new Joystick(viewport);
+      var game = new Game(requestAnimFrame, renderer, joystick);
+
+      game.start();
 
     </script>
   </body>

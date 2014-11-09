@@ -60,7 +60,7 @@
       var joystick = new Joystick(viewport);
       var game = new Game(requestAnimFrame, renderer, joystick);
 
-      game.start();
+      renderer.load(game.start.bind(game));
 
     </script>
   </body>

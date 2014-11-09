@@ -20,7 +20,8 @@
     <link rel="apple-touch-icon" sizes="114x114" href="images/Icon-114.png">
     <link rel="apple-touch-icon" sizes="144x144" href="images/Icon-144.png">
 
-    <title>Turn 1</title>
+    <title>Handoff Game</title>
+
     <style>
       html, body {
         margin: 0;
@@ -50,17 +51,21 @@
     <script src='lib/level.js'></script>
     <script src='lib/game.js'></script>
 
-    <script src='lib/joystick.js'></script>
-    <script src='lib/pixi-renderer.js'></script>
+    <script src='lib/touch/joystick.js'></script>
+    <script src='lib/pixi/pixi-renderer.js'></script>
+    <script src='lib/pixi/pixi-player.js'></script>
+    <script src='lib/pixi/pixi-terrain.js'></script>
+    <script src='lib/pixi/pixi-joystick.js'></script>
+    <script src='lib/pixi/pixi-camera.js'></script>
 
     <script>
 
       var viewport = document.getElementById('viewport');
       var renderer = new PixiRenderer(viewport);
       var joystick = new Joystick(viewport);
-      var game = new Game(requestAnimFrame, renderer, joystick);
+      var game = new Game(renderer, joystick);
 
-      game.start();
+      renderer.load(game.start.bind(game));
 
     </script>
   </body>

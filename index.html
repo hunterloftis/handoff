@@ -58,7 +58,7 @@
       var viewport = document.getElementById('viewport');
       var renderer = new PixiRenderer(viewport);
       var joystick = new Joystick(viewport);
-      var game = new Game(requestAnimFrame, renderer, joystick);
+      var game = new Game(renderer, joystick);
 
       renderer.load(game.start.bind(game));
 

@@ -59,6 +59,7 @@
     <!-- Control & input -->
     <script src='lib/touch/joystick.js'></script>
     <script src='lib/touch/magic.js'></script>
+    <script src='lib/touch/target.js'></script>
 
     <!-- Rendering -->
     <script src='lib/pixi/pixi-renderer.js'></script>
@@ -75,10 +76,13 @@
 
       var viewport = document.getElementById('viewport');
       var renderer = new PixiRenderer(viewport);
-      var joystick = new Joystick(viewport);
-      var magic = new Magic(viewport);
-      var game = new Game(renderer, joystick, magic);
 
+      // Order of priority
+      var joystick = new Joystick(viewport);
+      var target = new Target(viewport, renderer);
+      var magic = new Magic(viewport);
+
+      var game = new Game(renderer, joystick, magic, target);
       renderer.load(game.start.bind(game));
 
     </script>

@@ -266,6 +266,8 @@
 
 	// Euclidean distance between two points
 	function Distance(p1, p2) {
+		if (!p2) return 0;
+		
 		var dx = p2.X - p1.X;
 		var dy = p2.Y - p1.Y;
 		return Math.sqrt(dx * dx + dy * dy);

@@ -67,12 +67,9 @@
 
       var viewport = document.getElementById('viewport');
       var renderer = new PixiRenderer(viewport);
-      var joystick = new Joystick(viewport);
-      var remote = new Remote();
+      var remote = new Remote(renderer);
 
-      var game = new Game(renderer, joystick, remote);
-
-      renderer.load(game.start.bind(game));
+      renderer.load(remote.start.bind(remote));
 
     </script>
   </body>

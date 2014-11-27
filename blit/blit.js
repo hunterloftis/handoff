@@ -46,27 +46,20 @@
 
   function initBuffers(gl, posAttr) {
     var buffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-
-    // var vertices = [
-    //   10, 20,
-    //   80, 20,
-    //   10, 30,
-    //   10, 30,
-    //   80, 20,
-    //   80, 30
-    // ];
-
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);   // How is this working? what's this for?
     gl.enableVertexAttribArray(posAttr);
-    // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
     gl.vertexAttribPointer(posAttr, 2, gl.FLOAT, false, 0, 0);
+  }
+
+  function getGLContext(canvas, opts) {
+    return canvas.getContext('webgl', opts) || canvas.getContext('experimental-webgl', opts);
   }
 
   function Surface(canvas) {
     this.canvas = canvas;
     this.width = 0;
     this.height = 0;
-    this.gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+    this.gl = getGLContext(canvas, { alpha: false, premultipliedAlpha: false });
 
     initGL(this.gl);
 
@@ -126,6 +119,8 @@
     gl.disable(gl.DEPTH_TEST);  // TODO: use this instead of y-sorting?
     gl.disable(gl.CULL_FACE);
     gl.enable(gl.BLEND);
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
   }
 
   function Sprite(url, width, height) {
@@ -141,9 +136,8 @@
     this.loaded = true;
   };
 
-  // TODO: enable depth sorting so you don't have to sort by y every frame
+  // TODO: enable depth sorting so you don't have to sort by y every frame?
   Sprite.prototype.blit = function(surface, x, y, frame) {
-    //surface.ctx.drawImage(this.image, x, y);
     var gl = surface.gl;
     var x1 = x;
     var x2 = x + this.width;

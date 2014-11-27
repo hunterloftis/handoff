@@ -47,6 +47,8 @@
     <script src='vendor/lodash.min.js'></script>
     <script src='vendor/pubsub.js'></script>
 
+    <script src='blit/blit.js'></script>
+
     <script src='lib/loop.js'></script>
     <script src='lib/game.js'></script>
 
@@ -61,22 +63,17 @@
     <script src='lib/systems/walking-system.js'></script>
     <script src='lib/systems/wandering-system.js'></script>
 
-    <script src='lib/pixi/pixi-renderer.js'></script>
-    <script src='lib/pixi/pixi-viewport.js'></script>
-    <script src='lib/pixi/pixi-world.js'></script>
-    <script src='lib/pixi/pixi-player.js'></script>
-    <script src='lib/pixi/pixi-terrain.js'></script>
-    <script src='lib/pixi/pixi-joystick.js'></script>
-    <script src='lib/pixi/pixi-camera.js'></script>
+    <script src='lib/blit/blit-renderer.js'></script>
+    <script src='lib/blit/blit-camera.js'></script>
 
     <script>
 
-      var viewport = document.getElementById('viewport');
-      var renderer = new PixiRenderer(viewport);
-      var joystick = new Joystick(viewport);
+      var canvas = document.getElementById('viewport');
+      var renderer = new BlitRenderer(canvas);
+      var joystick = new Joystick(canvas);
       var game = new Game(renderer, joystick);
 
-      renderer.load(game.start.bind(game));
+      game.start();
 
     </script>
   </body>

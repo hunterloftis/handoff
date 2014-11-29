@@ -155,6 +155,7 @@
 
   function Sprite(surface, width, height, url) {
     this.surface = surface;
+    this.textures = [];
     this.loaded = false;
     this.width = width;
     this.height = height;
@@ -178,7 +179,7 @@
     canvas.height = size;
     ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, size, size);
 
-    this.texture = this._createTexture(canvas);
+    this.textures[0] = this._createTexture(canvas);
 
     // Setup scaling properties
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -249,7 +250,7 @@
     //gl.activeTexture(this.GL.TEXTURE0); // TODO: necessary?
 
     // Load texture into memory
-    gl.bindTexture(gl.TEXTURE_2D, this.texture);
+    gl.bindTexture(gl.TEXTURE_2D, this.textures[frame]);
 
     // Draw triangles that make up a rectangle
     gl.drawArrays(gl.TRIANGLES, 0, 6);

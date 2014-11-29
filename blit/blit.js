@@ -192,6 +192,16 @@
     // Pre-create buffers
     this.vertexBuffer = gl.createBuffer();
     this.textureBuffer = gl.createBuffer();
+
+    // Pre-create texture coords
+    this.textureCoords = new Float32Array([
+      0.0, 0.0,
+      1.0, 0.0,
+      0.0, 1.0,
+      0.0, 1.0,
+      1.0, 0.0,
+      1.0, 1.0
+    ]);
   };
 
   Sprite.prototype._createTexture = function(canvas) {
@@ -244,15 +254,7 @@
     gl.bindBuffer(gl.ARRAY_BUFFER, textureBuffer);
 
     // Fill it with the texture data
-    var textureCoords = new Float32Array([
-      0.0, 0.0,
-      1.0, 0.0,
-      0.0, 1.0,
-      0.0, 1.0,
-      1.0, 0.0,
-      1.0, 1.0
-    ]);
-    gl.bufferData(gl.ARRAY_BUFFER, textureCoords, gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, this.textureCoords, gl.STATIC_DRAW);
 
     // Connect texture buffer to shader's texture attribute
     gl.vertexAttribPointer(vertexTexture, 2, gl.FLOAT, false, 0, 0);

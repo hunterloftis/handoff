@@ -159,7 +159,10 @@
     this.loaded = false;
     this.width = width;
     this.height = height;
+    this.vertexBuffer = undefined;
+    this.textureBuffer = undefined;
     this.image = new Image();
+
     this.image.onload = this._onLoad.bind(this);
     this.image.src = url;
   }
@@ -170,16 +173,33 @@
 
     this.loaded = true;
 
-    // Resize the texture to be a square power of 2
+    // Create a square power-of-two canvas to resize the texture onto
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
-    var size = nextPowerOfTwo(Math.max(image.width, image.height));
-
+    var size = nextPowerOfTwo(Math.max(this.width, this.height));
     canvas.width = size;
     canvas.height = size;
-    ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, size, size);
 
-    this.textures[0] = this._createTexture(canvas);
+    // Loop through each frame in the image
+    for (var y = 0; y < image.height; y += this.height) {
+      for (var x = 0; x < image.width; x += this.width) {
+        ctx.clearRect(0, 0, size, size);
+        ctx.drawImage(image, x, y, this.width, this.height, 0, 0, size, size);
+        this._createTexture(canvas);
+      }
+    }
+
+    // Pre-create buffers
+    this.vertexBuffer = gl.createBuffer();
+    this.textureBuffer = gl.createBuffer();
+  };
+
+  Sprite.prototype._createTexture = function(canvas) {
+    var gl = this.surface.gl;
+    var texture = gl.createTexture();
+
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
 
     // Setup scaling properties
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -191,17 +211,8 @@
     // Unbind the texture
     gl.bindTexture(gl.TEXTURE_2D, null);
 
-    // Pre-create buffers
-    this.vertexBuffer = gl.createBuffer();
-    this.textureBuffer = gl.createBuffer();
-  };
-
-  Sprite.prototype._createTexture = function(canvas) {
-    var gl = this.surface.gl;
-    var texture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
-    return texture;
+    // Store the texture
+    this.textures.push(texture);
   };
 
   // TODO: enable depth sorting so you don't have to sort by y every frame?
@@ -248,6 +259,7 @@
 
     // Set slot 0 as active texture
     //gl.activeTexture(this.GL.TEXTURE0); // TODO: necessary?
+    //gl.activeTexture(gl['TEXTURE' + frame]);
 
     // Load texture into memory
     gl.bindTexture(gl.TEXTURE_2D, this.textures[frame]);

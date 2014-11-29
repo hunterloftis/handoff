@@ -178,13 +178,7 @@
     canvas.height = size;
     ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, size, size);
 
-    // Create a new texture and assign it as the active one
-    this.texture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, this.texture);
-    //gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); // Necessary?
-
-    // Load in the image
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
+    this.texture = this._createTexture(canvas);
 
     // Setup scaling properties
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -199,6 +193,14 @@
     // Pre-create buffers
     this.vertexBuffer = gl.createBuffer();
     this.textureBuffer = gl.createBuffer();
+  };
+
+  Sprite.prototype._createTexture = function(canvas) {
+    var gl = this.surface.gl;
+    var texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
+    return texture;
   };
 
   // TODO: enable depth sorting so you don't have to sort by y every frame?

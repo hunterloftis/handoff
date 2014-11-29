@@ -5,10 +5,15 @@
     'attribute vec2 a_texture;',
     'varying vec2 v_texture;',
     'uniform vec2 u_resolution;',
+    'uniform mat3 u_matrix;',
 
     'void main() {',
+
+      // apply the transformation matrix
+      'vec2 position = (u_matrix * vec3(a_position, 1)).xy;',
+
       // convert the rectangle from pixels to 0.0 to 1.0
-      'vec2 zeroToOne = a_position / u_resolution;',
+      'vec2 zeroToOne = position / u_resolution;',
 
       // convert from 0->1 to 0->2
       'vec2 zeroToTwo = zeroToOne * 2.0;',
@@ -83,9 +88,14 @@
     var resolutionLocation = gl.getUniformLocation(program, 'u_resolution');
     gl.uniform2f(resolutionLocation, width, height);
 
+    // Provide the transformation matrix
+    var transformationMatrix = gl.getUniformLocation(program, 'u_matrix');
+
     return {
       position: vertexPosition,
-      texture: vertexTexture
+      texture: vertexTexture,
+      resolution: resolutionLocation,
+      matrix: transformationMatrix
     };
   }
 
@@ -103,6 +113,7 @@
 
   function Surface(canvas) {
     this.canvas = canvas;
+    this.matrixStack = [ mat2d.create() ];
     this.width = 0;
     this.height = 0;
     this.gl = getGLContext(canvas, { alpha: false, premultipliedAlpha: false });
@@ -127,15 +138,21 @@
   };
 
   Surface.prototype.push = function() {
-
+    this.matrixStack.push( mat2d.clone(this.getMatrix()) );
   };
 
   Surface.prototype.pop = function() {
+    return this.matrixStack.pop();
+  };
 
+  Surface.prototype.getMatrix = function() {
+    return this.matrixStack.slice(-1);
   };
 
   Surface.prototype.translate = function(tx, ty) {
-
+    var m = this.getMatrix();
+    var v = vec2.create([tx, ty]);
+    mat2d.translate(m, m, v);
   };
 
   Surface.prototype.scale = function(scale) {
@@ -231,6 +248,8 @@
     var gl = surface.gl;
     var vertexPosition = surface.attrs.position;
     var vertexTexture = surface.attrs.texture;
+    var matrixLocation = surface.attrs.matrix;
+    var matrix = surface.getMatrix();
 
     // Bind the vertex buffer as the current buffer
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
@@ -263,6 +282,13 @@
 
     // Load texture into memory
     gl.bindTexture(gl.TEXTURE_2D, this.textures[frame]);
+
+    // Apply the transformation matrix
+    var matrix = mat3.create();
+    mat3.translate(matrix, matrix, vec2.set(vec2.create(), 300, 200));
+    //console.log('matrix:', JSON.stringify(matrix));
+    gl.uniformMatrix3fv(matrixLocation, false, matrix);
+    //debugger;
 
     // Draw triangles that make up a rectangle
     gl.drawArrays(gl.TRIANGLES, 0, 6);

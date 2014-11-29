@@ -180,17 +180,46 @@
 
   function Sprite(surface, width, height, url) {
     this.surface = surface;
-    this.textures = [];
+    this.textures = [];       // TODO: instead of an array, store as a large texture and select frames with UV coords
     this.loaded = false;
     this.width = width;
     this.height = height;
-    this.vertexBuffer = undefined;
-    this.textureBuffer = undefined;
     this.image = new Image();
 
+    // Buffers
+    this.vertexBuffer = surface.gl.createBuffer();
+    this.textureBuffer = surface.gl.createBuffer();
+
+    // Texture coords
+    this.textureCoords = new Float32Array([
+      0.0, 0.0,
+      1.0, 0.0,
+      0.0, 1.0,
+      0.0, 1.0,
+      1.0, 0.0,
+      1.0, 1.0
+    ]);
+
     this.image.onload = this._onLoad.bind(this);
-    this.image.src = url;
+    if (url) this.loadUrl(url);
   }
+
+  Sprite.prototype.canvasFrame = function(frame, drawFn) {
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+    var size = nextPowerOfTwo(Math.max(this.width, this.height));
+
+    canvas.width = this.width;
+    canvas.height = this.height;
+
+    drawFn(ctx, canvas.width, canvas.height);
+
+    this._createTexture(canvas, frame);
+  };
+
+  Sprite.prototype.loadUrl = function(url) {
+    this.image.src = url;
+  };
 
   Sprite.prototype._onLoad = function() {
     var gl = this.surface.gl;
@@ -213,45 +242,40 @@
         this._createTexture(canvas);
       }
     }
-
-    // Pre-create buffers
-    this.vertexBuffer = gl.createBuffer();
-    this.textureBuffer = gl.createBuffer();
-
-    // Pre-create texture coords
-    this.textureCoords = new Float32Array([
-      0.0, 0.0,
-      1.0, 0.0,
-      0.0, 1.0,
-      0.0, 1.0,
-      1.0, 0.0,
-      1.0, 1.0
-    ]);
   };
 
-  Sprite.prototype._createTexture = function(canvas) {
+  Sprite.prototype._createTexture = function(canvas, index) {
     var gl = this.surface.gl;
     var texture = gl.createTexture();
+
+    index = index || this.textures.length;
 
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
 
     // Setup scaling properties
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-    gl.generateMipmap(gl.TEXTURE_2D);
+    // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+    // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+    // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+    // gl.generateMipmap(gl.TEXTURE_2D);
+
+    // Theoretically makes non-power-of-2 textures ok:
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); //gl.NEAREST is also allowed, instead of gl.LINEAR, as neither mipmap.
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); //Prevents s-coordinate wrapping (repeating).
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE); //Prevents t-coordinate wrapping (repeating).
 
     // Unbind the texture
     gl.bindTexture(gl.TEXTURE_2D, null);
 
     // Store the texture
-    this.textures.push(texture);
+    this.textures[index] = texture;
   };
 
   // TODO: enable depth sorting so you don't have to sort by y every frame?
   Sprite.prototype.blit = function(x, y, frame) {
+    frame = frame || 0;
+
     var surface = this.surface;
     var gl = surface.gl;
     var vertexPosition = surface.attrs.position;

@@ -45,7 +45,7 @@
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.depthFunc(gl.LEQUAL);
-    gl.disable(gl.DEPTH_TEST);  // TODO: use this instead of y-sorting?
+    gl.disable(gl.DEPTH_TEST);
     gl.disable(gl.CULL_FACE);
     gl.enable(gl.BLEND);
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
@@ -84,9 +84,8 @@
     var vertexTexture = gl.getAttribLocation(program, "a_texture");
     gl.enableVertexAttribArray(vertexTexture);
 
-    // Provide the resolution (TODO: update on resize?)
+    // Provide the resolution location
     var resolutionLocation = gl.getUniformLocation(program, 'u_resolution');
-    gl.uniform2f(resolutionLocation, width, height);
 
     // Provide the transformation matrix
     var transformationMatrix = gl.getUniformLocation(program, 'u_matrix');
@@ -116,20 +115,24 @@
     this.matrixStack = [ mat3.create() ];
     this.width = 0;
     this.height = 0;
-    this.gl = getGLContext(canvas, { alpha: false, premultipliedAlpha: false });
 
+    this.gl = getGLContext(canvas, { alpha: false, premultipliedAlpha: false });
+    this.locations = initGL(this.gl, this.width, this.height);
     this.resize();
-    this.attrs = initGL(this.gl, this.width, this.height);
   }
 
   Surface.prototype.resize = function() {
-    this.width = this.canvas.width = this.canvas.clientWidth;
-    this.height = this.canvas.height = this.canvas.clientHeight;
-    this.gl.viewport(0, 0, this.width, this.height);
+    var width = this.canvas.clientWidth;
+    var height = this.canvas.clientHeight;
+
+    this.width = this.canvas.width = width;
+    this.height = this.canvas.height = height;
+    this.gl.viewport(0, 0, width, height);
+    this.gl.uniform2f(this.locations.resolution, width, height);
 
     return {
-      width: this.width,
-      height: this.height
+      width: width,
+      height: height
     };
   };
 
@@ -181,7 +184,6 @@
   function Sprite(surface, width, height, url) {
     this.surface = surface;
     this.textures = [];       // TODO: instead of an array, store as a large texture and select frames with UV coords
-    this.loaded = false;
     this.width = width;
     this.height = height;
     this.image = new Image();
@@ -204,13 +206,14 @@
     if (url) this.loadUrl(url);
   }
 
+  // TODO: allow you to render on a non-power-of-two and then convert to a power-of-two
   Sprite.prototype.canvasFrame = function(frame, drawFn) {
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
     var size = nextPowerOfTwo(Math.max(this.width, this.height));
 
-    canvas.width = this.width;
-    canvas.height = this.height;
+    canvas.width = size;
+    canvas.height = size;
 
     drawFn(ctx, canvas.width, canvas.height);
 
@@ -224,8 +227,6 @@
   Sprite.prototype._onLoad = function() {
     var gl = this.surface.gl;
     var image = this.image;
-
-    this.loaded = true;
 
     // Create a square power-of-two canvas to resize the texture onto
     var canvas = document.createElement('canvas');
@@ -253,14 +254,14 @@
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
 
-    // Setup scaling properties
+    // Setup scaling properties (only works with power-of-2 textures)
     // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
     // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
     // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
     // gl.generateMipmap(gl.TEXTURE_2D);
 
-    // Theoretically makes non-power-of-2 textures ok:
+    // Makes non-power-of-2 textures ok:
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); //gl.NEAREST is also allowed, instead of gl.LINEAR, as neither mipmap.
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); //Prevents s-coordinate wrapping (repeating).
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE); //Prevents t-coordinate wrapping (repeating).
@@ -272,15 +273,16 @@
     this.textures[index] = texture;
   };
 
-  // TODO: enable depth sorting so you don't have to sort by y every frame?
   Sprite.prototype.blit = function(x, y, frame) {
     frame = frame || 0;
 
+    if (!this.textures[frame]) return;
+
     var surface = this.surface;
     var gl = surface.gl;
-    var vertexPosition = surface.attrs.position;
-    var vertexTexture = surface.attrs.texture;
-    var matrixLocation = surface.attrs.matrix;
+    var vertexPosition = surface.locations.position;
+    var vertexTexture = surface.locations.texture;
+    var matrixLocation = surface.locations.matrix;
     var matrix = surface.getMatrix();
 
     // Bind the vertex buffer as the current buffer

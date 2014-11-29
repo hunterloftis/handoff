@@ -195,18 +195,22 @@
 
     // Unbind the texture
     gl.bindTexture(gl.TEXTURE_2D, null);
+
+    // Pre-create buffers
+    this.vertexBuffer = gl.createBuffer();
+    this.textureBuffer = gl.createBuffer();
   };
 
   // TODO: enable depth sorting so you don't have to sort by y every frame?
-  Sprite.prototype.blit = function(surface, x, y, frame) {
+  Sprite.prototype.blit = function(x, y, frame) {
+    var surface = this.surface;
     var gl = surface.gl;
     var vertexPosition = surface.attrs.position;
     var vertexTexture = surface.attrs.texture;
+    var vertexBuffer = this.vertexBuffer;
+    var textureBuffer = this.textureBuffer;
 
-    // Create a new buffer for the vertices
-    var vertexBuffer = gl.createBuffer();
-
-    // Bind it as the current buffer
+    // Bind the vertex buffer as the current buffer
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);   // How is this working? what's this for?
 
     // Fill it with the vertex data
@@ -222,10 +226,7 @@
     // Connect vertex buffer to shader's vertex position attribute
     gl.vertexAttribPointer(vertexPosition, 2, gl.FLOAT, false, 0, 0);
 
-    // Create a new buffer for the texture
-    var textureBuffer = gl.createBuffer();
-
-    // Bind it as the current buffer
+    // Bind the shader buffer as the current buffer
     gl.bindBuffer(gl.ARRAY_BUFFER, textureBuffer);
 
     // Fill it with the texture data

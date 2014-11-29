@@ -156,7 +156,9 @@
   };
 
   Surface.prototype.scale = function(scale) {
-
+    var m = this.getMatrix();
+    var v = vec2.set(vec2.create(), scale, scale);
+    mat3.scale(m, m, v);
   };
 
   Surface.prototype.getRect = function() {

@@ -231,11 +231,9 @@
     var gl = surface.gl;
     var vertexPosition = surface.attrs.position;
     var vertexTexture = surface.attrs.texture;
-    var vertexBuffer = this.vertexBuffer;
-    var textureBuffer = this.textureBuffer;
 
     // Bind the vertex buffer as the current buffer
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);   // How is this working? what's this for?
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
 
     // Fill it with the vertex data
     var x1 = x;
@@ -251,7 +249,7 @@
     gl.vertexAttribPointer(vertexPosition, 2, gl.FLOAT, false, 0, 0);
 
     // Bind the shader buffer as the current buffer
-    gl.bindBuffer(gl.ARRAY_BUFFER, textureBuffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.textureBuffer);
 
     // Fill it with the texture data
     gl.bufferData(gl.ARRAY_BUFFER, this.textureCoords, gl.STATIC_DRAW);

@@ -162,11 +162,17 @@
   };
 
   Surface.prototype.getRect = function() {
+    var m = mat3.clone(this.getMatrix());
+    var ul = vec3.set(vec3.create(), 0, 0, 1);
+    var lr = vec3.set(vec3.create(), this.width, this.height, 1);
+    mat3.invert(m, m);
+    vec3.transformMat3(ul, ul, m);
+    vec3.transformMat3(lr, lr, m);
     return {
-      left: 0,
-      top: 0,
-      right: 0,
-      bottom: 0
+      left: ul[0],
+      top: ul[1],
+      right: lr[0],
+      bottom: lr[1]
     };
   };
 

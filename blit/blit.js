@@ -113,7 +113,7 @@
 
   function Surface(canvas) {
     this.canvas = canvas;
-    this.matrixStack = [ mat2d.create() ];
+    this.matrixStack = [ mat3.create() ];
     this.width = 0;
     this.height = 0;
     this.gl = getGLContext(canvas, { alpha: false, premultipliedAlpha: false });
@@ -138,7 +138,7 @@
   };
 
   Surface.prototype.push = function() {
-    this.matrixStack.push( mat2d.clone(this.getMatrix()) );
+    this.matrixStack.push( mat3.clone(this.getMatrix()) );
   };
 
   Surface.prototype.pop = function() {
@@ -146,13 +146,13 @@
   };
 
   Surface.prototype.getMatrix = function() {
-    return this.matrixStack.slice(-1);
+    return this.matrixStack[this.matrixStack.length - 1];
   };
 
   Surface.prototype.translate = function(tx, ty) {
     var m = this.getMatrix();
-    var v = vec2.create([tx, ty]);
-    mat2d.translate(m, m, v);
+    var v = vec2.set(vec2.create(), tx, ty);
+    mat3.translate(m, m, v);
   };
 
   Surface.prototype.scale = function(scale) {
@@ -284,11 +284,7 @@
     gl.bindTexture(gl.TEXTURE_2D, this.textures[frame]);
 
     // Apply the transformation matrix
-    var matrix = mat3.create();
-    mat3.translate(matrix, matrix, vec2.set(vec2.create(), 300, 200));
-    //console.log('matrix:', JSON.stringify(matrix));
     gl.uniformMatrix3fv(matrixLocation, false, matrix);
-    //debugger;
 
     // Draw triangles that make up a rectangle
     gl.drawArrays(gl.TRIANGLES, 0, 6);

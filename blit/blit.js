@@ -2,10 +2,8 @@
 
   var VERTEX_SHADER = [
     'attribute vec2 a_position;',
-
     'attribute vec2 a_texture;',
     'varying vec2 v_texture;',
-
     'uniform vec2 u_resolution;',
 
     'void main() {',
@@ -18,6 +16,7 @@
       // convert from 0->2 to -1->+1 (clipspace)
       'vec2 clipSpace = zeroToTwo - 1.0;',
 
+      // invert y axis and assign position
       'gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);',
 
       // pass the texture coordinate to the fragment shader
@@ -27,12 +26,8 @@
 
   var FRAGMENT_SHADER =[
     'precision mediump float;',
-
-    // our texture
-    'uniform sampler2D u_image;',
-
-    // the texture coords passed in from the vertex shader
-    'varying vec2 v_texture;',
+    'uniform sampler2D u_image;',   // the texture
+    'varying vec2 v_texture;',      // the texture coords passed in from the vertex shader
 
     'void main(void) {',
       'gl_FragColor = texture2D(u_image, v_texture);',
@@ -96,6 +91,12 @@
 
   function getGLContext(canvas, opts) {
     return canvas.getContext('webgl', opts) || canvas.getContext('experimental-webgl', opts);
+  }
+
+  function nextPowerOfTwo(n) {
+    var i = Math.floor(n / 2);
+    while (i < n) i *= 2;
+    return i;
   }
 
   // Surface
@@ -168,17 +169,28 @@
 
     this.loaded = true;
 
+    // Resize the texture to be a square power of 2
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+    var size = nextPowerOfTwo(Math.max(image.width, image.height));
+
+    canvas.width = size;
+    canvas.height = size;
+    ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, size, size);
+
     // Create a new texture and assign it as the active one
     this.texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
-    //gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    //gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); // Necessary?
 
     // Load in the image
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
 
     // Setup scaling properties
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
     gl.generateMipmap(gl.TEXTURE_2D);
 
     // Unbind the texture
@@ -236,7 +248,12 @@
     // Load texture into memory
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
+    // Draw triangles that make up a rectangle
     gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+    // Unbind everything
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    gl.bindTexture(gl.TEXTURE_2D, null);
   };
 
   // Export

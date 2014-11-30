@@ -1,0 +1,15 @@
+{
+  "name": "handoff",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "mkdir -p build && browserify index.js -d -s Handoff -o build/handoff.js",
+    "watch": "mkdir -p build && watchify index.js -d -s Handoff -o build/handoff.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "browserify": "^6.3.3"
+  }
+}

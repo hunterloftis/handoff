@@ -43,39 +43,18 @@
     <canvas id='viewport'></canvas>
 
     <script src='vendor/hand-1.3.8.js'></script>
-    <script src='vendor/pixi.dev.js'></script>
     <script src='vendor/lodash.min.js'></script>
     <script src='vendor/pubsub.js'></script>
-
     <script src='vendor/gl-matrix-min.js'></script>
-    <script src='blit/blit.js'></script>
-
-    <script src='lib/loop.js'></script>
-    <script src='lib/game.js'></script>
-
-    <script src='lib/touch/joystick.js'></script>
-
-    <script src='lib/entity-system.js'></script>
-    <script src='lib/systems/controllable-system.js'></script>
-    <script src='lib/systems/joystick-system.js'></script>
-    <script src='lib/systems/level-system.js'></script>
-    <script src='lib/systems/player-system.js'></script>
-    <script src='lib/systems/position-system.js'></script>
-    <script src='lib/systems/walking-system.js'></script>
-    <script src='lib/systems/wandering-system.js'></script>
-    <script src='lib/systems/dude-system.js'></script>
-
-    <script src='lib/blit/blit-renderer.js'></script>
-    <script src='lib/blit/blit-camera.js'></script>
-    <script src='lib/blit/blit-terrain.js'></script>
-    <script src='lib/blit/blit-joystick.js'></script>
+    
+    <script src='build/handoff.js'></script>
 
     <script>
 
       var canvas = document.getElementById('viewport');
-      var renderer = new BlitRenderer(canvas);
-      var joystick = new Joystick(canvas);
-      var game = new Game(renderer, joystick);
+      var renderer = new Handoff.Renderer(canvas);
+      var joystick = new Handoff.Joystick(canvas);
+      var game = new Handoff.Game(renderer, joystick);
 
       game.start();
 

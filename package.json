@@ -10,6 +10,10 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "browserify": "^6.3.3"
+    "browserify": "^6.3.3",
+    "gl-matrix": "^2.1.0",
+    "gl-matrix-mat3": "^2.2.1-npm",
+    "gl-matrix-vec2": "^2.2.1-npm",
+    "watchify": "^2.1.1"
   }
 }

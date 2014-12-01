@@ -14,6 +14,8 @@
     "gl-matrix": "^2.1.0",
     "gl-matrix-mat3": "^2.2.1-npm",
     "gl-matrix-vec2": "^2.2.1-npm",
+    "lodash": "^2.4.1",
+    "pubsub": "^1.0.2",
     "watchify": "^2.1.1"
   }
 }
